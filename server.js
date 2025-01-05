@@ -2,10 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
+
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+
 
 app.use(cors());
 app.use(express.json());
@@ -64,6 +68,25 @@ app.post('/api/notify-tab-switch', (req, res) => {
     const timestamp = new Date().toLocaleString(); // Add timestamp
     io.emit('student-event', { student, event, timestamp });
     res.status(200).json({ message: 'Teacher notified about tab switch successfully!' });
+});
+
+// API to get individual student responses by USN
+app.get('/api/student-responses/:usn', (req, res) => {
+    const { usn } = req.params;
+    const student = studentResponses.find(s => s.usn === usn);
+    if (!student) {
+        return res.status(404).json({ message: 'Student not found' });
+    }
+    res.json(student);
+});
+
+
+// Serve the student response page
+app.get('/student/:usn', (req, res) => {
+    const usn = req.params.usn;
+    // Here, we could potentially check if the student exists or not
+    // But for now, we're just serving the HTML page
+    res.sendFile(path.join(__dirname, 'public', 'student-response.html'));
 });
 
 // Start the server

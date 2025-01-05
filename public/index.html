@@ -14,14 +14,22 @@
             <a href="student-quiz.html" target="_blank">Student Quiz</a>
         </nav>
     </header>
+
     <main>
         <h2>Notifications</h2>
         <div id="notifications"></div>
+
+        <h2>Student Responses</h2>
+        <ul id="studentList">
+            <!-- List of student links will be populated here -->
+        </ul>
     </main>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
 
+        // Display notifications
         socket.on('student-event', ({ student, event, timestamp }) => {
             const notifications = document.getElementById('notifications');
             const notification = document.createElement('div');
@@ -30,8 +38,6 @@
         });
 
         // Detect tab switching
-        let isTabVisible = true;
-
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 // Tab switched away
@@ -43,6 +49,24 @@
                 socket.emit('tab-switch', { event: 'Tab switched back', timestamp });
             }
         });
+
+        // Fetch student responses and generate individual links
+        async function fetchStudentResponses() {
+            const response = await fetch('/api/student-responses');
+            const studentResponses = await response.json();
+            
+            const studentList = document.getElementById('studentList');
+            studentList.innerHTML = ''; // Clear existing data
+            
+            studentResponses.forEach(student => {
+                const studentLink = document.createElement('li');
+                studentLink.innerHTML = `<a href="/student/${student.usn}" target="_blank">View ${student.name}'s Responses</a>`;
+                studentList.appendChild(studentLink);
+            });
+        }
+
+        // Call the function to fetch and display student responses
+        fetchStudentResponses();
     </script>
 </body>
 </html>

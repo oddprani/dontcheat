@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Responses</title>
+    <style>
+        
+/* General reset and styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    padding: 20px;
+}
+
+/* Header styling */
+header {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+header nav a {
+    font-size: 1.2rem;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+header nav a:hover {
+    text-decoration: underline;
+}
+
+/* Main content section */
+main {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+main h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+main #studentAnswers {
+    margin-top: 20px;
+}
+
+.answer-options {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.answer-options strong {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.answer-options p {
+    font-size: 1.1rem;
+    color: #555;
+}
+
+/* Footer styling */
+footer {
+    text-align: center;
+    font-size: 1rem;
+    color: #777;
+    margin-top: 50px;
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Student Response</h1>
+
+    </header>
+
+    <main>
+        <h2>Responses for <span id="studentName"></span> (USN: <span id="studentUsn"></span>)</h2>
+        <div id="studentAnswers">
+            <!-- Student's answers will be populated here -->
+        </div>
+    </main>
+
+    <script>
+        const studentUsn = window.location.pathname.split('/').pop(); // Get the student USN from the URL
+        const studentName = document.getElementById('studentName');
+        const studentUsnElement = document.getElementById('studentUsn');
+        const studentAnswers = document.getElementById('studentAnswers');
+
+        async function fetchStudentResponse() {
+            const response = await fetch(`/api/student-responses/${studentUsn}`);
+            const studentResponse = await response.json();
+            
+            if (!studentResponse) {
+                studentAnswers.innerHTML = '<p>Student not found.</p>';
+                return;
+            }
+
+            studentName.textContent = studentResponse.name;
+            studentUsnElement.textContent = studentResponse.usn;
+
+            const answersHTML = studentResponse.answers.map((answer, index) => {
+                return `
+                    <div class="answer-options">
+                        <strong>Question ${index + 1}:</strong> ${answer}
+                    </div>
+                `;
+            }).join('');
+            studentAnswers.innerHTML = answersHTML;
+        }
+
+        fetchStudentResponse();
+    </script>
+</body>
+</html>
