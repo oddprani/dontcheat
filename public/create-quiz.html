@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Create Quiz</h1>
+        <nav>
+            <a href="index.html">Teacher Dashboard</a>
+            <a href="student-quiz.html" target="_blank">Student Quiz</a>
+        </nav>
+    </header>
+    <main>
+        <form id="quiz-form">
+            <label>Question:
+                <input type="text" name="question" required>
+            </label>
+            <div id="options-container">
+                <label>Option 1:
+                    <input type="text" name="options" required>
+                </label>
+                <label>Option 2:
+                    <input type="text" name="options" required>
+                </label>
+            </div>
+            <button type="button" id="add-option">Add Option</button>
+            <button type="submit">Submit</button>
+        </form>
+    </main>
+    <script>
+        document.getElementById('add-option').addEventListener('click', () => {
+            const optionInput = document.createElement('label');
+            optionInput.innerHTML = `Option: <input type="text" name="options" required>`;
+            document.getElementById('options-container').appendChild(optionInput);
+        });
+
+        document.getElementById('quiz-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const question = formData.get('question');
+            const options = formData.getAll('options');
+
+            const response = await fetch('http://localhost:3000/api/mcq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, options })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            event.target.reset();
+        });
+    </script>
+</body>
+</html>

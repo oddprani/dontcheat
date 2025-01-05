@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Student Quiz</h1>
+        <form id="student-info-form">
+            <label>USN:
+                <input type="text" id="usn" required placeholder="e.g. 4GE23CS424">
+            </label>
+            <label>Name:
+                <input type="text" id="name" required placeholder="e.g. Vivek">
+            </label>
+            <button type="submit">Start Quiz</button>
+        </form>
+    </header>
+    <main id="quiz-container" style="display:none;">
+        <div id="questions-container"></div>
+    </main>
+    <script>
+        let studentInfo = null;
+
+        // Start quiz after entering student info
+        document.getElementById('student-info-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            studentInfo = {
+                usn: document.getElementById('usn').value,
+                name: document.getElementById('name').value
+            };
+            document.getElementById('student-info-form').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            loadQuiz();
+        });
+
+        // Load questions for quiz
+        async function loadQuiz() {
+            const response = await fetch('http://localhost:3000/api/mcq');
+            const questions = await response.json();
+            const container = document.getElementById('questions-container');
+            container.innerHTML = questions.map((q, i) => `
+                <div>
+                    <h3>${i + 1}. ${q.question}</h3>
+                    ${q.options.map((o, j) => `
+                        <label>
+                            <input type="radio" name="q${i}" value="${j}">
+                            ${o}
+                        </label>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // Detect if student switches tab or clicks away
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                fetch('http://localhost:3000/api/notify-teacher', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student: studentInfo ? studentInfo.name : 'Unknown',
+                        event: 'Switched tab or clicked away'
+                    })
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Teacher Dashboard</h1>
+        <nav>
+            <a href="create-quiz.html">Create Quiz</a>
+            <a href="student-quiz.html" target="_blank">Student Quiz</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Notifications</h2>
+        <div id="notifications"></div>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('student-event', ({ student, event }) => {
+            const notifications = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            notification.textContent = `${student}: ${event}`;
+            notifications.appendChild(notification);
+        });
+    </script>
+</body>
+</html>
