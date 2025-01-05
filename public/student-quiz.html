@@ -21,6 +21,7 @@
     </header>
     <main id="quiz-container" style="display:none;">
         <div id="questions-container"></div>
+        <button id="submit-quiz" style="display:none;">Submit Quiz</button>
     </main>
     <script>
         let studentInfo = null;
@@ -47,13 +48,50 @@
                     <h3>${i + 1}. ${q.question}</h3>
                     ${q.options.map((o, j) => `
                         <label>
-                            <input type="radio" name="q${i}" value="${j}">
+                            <input type="radio" name="q${i}" value="${o}">
                             ${o}
                         </label>
                     `).join('')}
                 </div>
             `).join('');
+
+            // Show the submit button after loading questions
+            document.getElementById('submit-quiz').style.display = 'block';
         }
+
+        // Submit student responses
+        document.getElementById('submit-quiz').addEventListener('click', async () => {
+            const answers = [];
+            const questionsContainer = document.getElementById('questions-container');
+
+            // Collect answers
+            const inputs = questionsContainer.querySelectorAll('input[type="radio"]:checked');
+            inputs.forEach(input => {
+                answers.push(input.value);
+            });
+
+            if (answers.length === 0) {
+                alert('Please answer at least one question before submitting.');
+                return;
+            }
+
+            const response = await fetch('http://localhost:3000/api/student-responses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    usn: studentInfo.usn,
+                    name: studentInfo.name,
+                    answers: answers
+                })
+            });
+
+            const result = await response.json();
+            if (result.message === 'Responses saved successfully!') {
+                window.location.href = '/quiz-submitted.html'; // Redirect to success page
+            } else {
+                alert('Error submitting the quiz. Please try again.');
+            }
+        });
 
         // Detect if student switches tab or clicks away
         document.addEventListener('visibilitychange', () => {

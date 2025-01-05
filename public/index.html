@@ -22,11 +22,26 @@
     <script>
         const socket = io();
 
-        socket.on('student-event', ({ student, event }) => {
+        socket.on('student-event', ({ student, event, timestamp }) => {
             const notifications = document.getElementById('notifications');
             const notification = document.createElement('div');
-            notification.textContent = `${student}: ${event}`;
+            notification.textContent = `${student}: ${event} at ${timestamp}`;
             notifications.appendChild(notification);
+        });
+
+        // Detect tab switching
+        let isTabVisible = true;
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Tab switched away
+                const timestamp = new Date().toLocaleTimeString();
+                socket.emit('tab-switch', { event: 'Tab switched away', timestamp });
+            } else {
+                // Tab switched back
+                const timestamp = new Date().toLocaleTimeString();
+                socket.emit('tab-switch', { event: 'Tab switched back', timestamp });
+            }
         });
     </script>
 </body>

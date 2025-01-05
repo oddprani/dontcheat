@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 let questions = [];
+let studentResponses = []; // Store student responses
 
 // API to add MCQs
 app.post('/api/mcq', (req, res) => {
@@ -28,14 +29,41 @@ app.get('/api/mcq', (req, res) => {
     res.json(questions);
 });
 
-// Notify teacher about tab switch
+// API to save student responses
+app.post('/api/student-responses', (req, res) => {
+    const { usn, name, answers } = req.body;
+    if (!usn || !name || !answers || answers.length === 0) {
+        return res.status(400).json({ message: 'Invalid student data.' });
+    }
+    studentResponses.push({ usn, name, answers });
+    res.status(201).json({ message: 'Responses saved successfully!' });
+});
+
+// API to get all student responses
+app.get('/api/student-responses', (req, res) => {
+    res.json(studentResponses);
+});
+
+// Notify teacher about tab switch (with timestamp)
 app.post('/api/notify-teacher', (req, res) => {
     const { student, event } = req.body;
     if (!student || !event) {
         return res.status(400).json({ message: 'Invalid notification data.' });
     }
-    io.emit('student-event', { student, event });
+    const timestamp = new Date().toLocaleString(); // Add timestamp
+    io.emit('student-event', { student, event, timestamp });
     res.status(200).json({ message: 'Teacher notified successfully!' });
+});
+
+// Notify teacher about tab switch with timing (Same endpoint, unified)
+app.post('/api/notify-tab-switch', (req, res) => {
+    const { student, event } = req.body;
+    if (!student || !event) {
+        return res.status(400).json({ message: 'Invalid notification data.' });
+    }
+    const timestamp = new Date().toLocaleString(); // Add timestamp
+    io.emit('student-event', { student, event, timestamp });
+    res.status(200).json({ message: 'Teacher notified about tab switch successfully!' });
 });
 
 // Start the server
